@@ -87,7 +87,8 @@ legal-rag/
 
 ## Method
 
-### 1. Synthetic QA Generation (`pipeline_generate.py`)
+### 1. Synthetic QA Generation (`pipeline_generate.py`) (run once — expensive), 
+### This will create data/cache_corpus.pkl, cache_questions.pkl, cache_qa.pkl
 
 Run once before training.
 
