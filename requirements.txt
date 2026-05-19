@@ -1,0 +1,11 @@
+torch
+sentence-transformers
+anthropic
+datasets
+optuna
+pandas
+numpy
+openpyxl
+python-dotenv
+matplotlib
+scikit-learn
