@@ -1,6 +1,6 @@
 # Fine-tuned RAG
 
-I developed a fine-tuned retrieval head for RAG that learns to more reliably retrieve relevant passages by transforming the query embeddings before retrieval. It is trained on synthetically generated question-chunk pairs from the corpus, and benchmarked against standard top-K cosine similarity on the isaacus/legal-rag-bench legal corpus.
+I developed a fine-tuned retrieval head for RAG that learns to more reliably retrieve relevant passages by transforming the query embeddings before retrieval. It is trained on synthetically generated question-chunk pairs from the corpus, and benchmarked against standard top-K cosine similarity on the [`isaacus/legal-rag-bench`](https://huggingface.co/datasets/isaacus/legal-rag-bench) legal corpus.
 
 ![Fine-tuned RAG](results/architecture.png)
 
