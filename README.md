@@ -2,6 +2,8 @@
 
 I developed a fine-tuned retrieval head for RAG that learns to more reliably retrieve relevant passages by transforming the query embeddings before retrieval. It is trained on synthetically generated question-chunk pairs from the corpus, and benchmarked against standard top-K cosine similarity on the isaacus/legal-rag-bench legal corpus.
 
+![Fine-tuned RAG](results/architecture.png)
+
 ## Overview
 
 ### The Problem with Cosine Top-K Retrieval
@@ -27,13 +29,13 @@ This is exactly what this pipeline does for a RAG that covers a legal domain (as
 
 **1. Synthetic Question Generation**
 
-For each chunk in the training corpus (~4,800 chunks), an LLM (Claude Haiku) generates up to 5 realistic legal questions (similar to potential future user queries) whose answers can be inferred from that chunk. This produces ~14,000 synthetic question-chunk pairs (referred to as QA-pairs from here on). Questions and chunks are both embedded and split into training and validation QA-pairs, ensuring no chunk appears in both splits.
+For each chunk in the training corpus (~4,800 chunks), an LLM (Claude Haiku) generates up to 5 realistic legal questions (similar to potential future user queries) whose answers can be inferred from that chunk (these questions can be found in data/synthethic_questions.xlsx). This produces ~14,000 synthetic question-chunk pairs (referred to as QA-pairs from here on). Questions and chunks are both embedded and split into training and validation QA-pairs, ensuring no chunk appears in both splits.
 
 **2. Neural Net Training and Hyperparameter Optimisation**
 
 A lightweight neural network (separate from the embedding model itself) is trained on the embedded training QA-pairs using **Multiple Negatives Ranking (MNR) Loss**: for each question in a batch, the correct chunk is the positive and all other chunks serve as in-batch negatives. The loss pushes the transformed question embedding close to its correct chunk while pushing it away from all others simultaneously. To handle the fact that multiple synthetic questions may map to the same chunk, a **masking mechanism** ensures these are not penalised as false negatives.
 
-After each epoch, the model is evaluated on the validation QA-pairs by measuring **Hit Rate@5** — the proportion of validation questions for which the correct chunk appears in the top-5 retrieved results. Retrieval works by embedding the question, passing it through the neural network, and ranking all corpus chunks by cosine similarity to the transformed embedding. [Optuna](https://optuna.org/) (TPE Bayesian optimisation) searches over hyperparameters across multiple trials, saving the checkpoint with the highest validation Hit Rate. This means the saved model is the one that most reliably retrieves the correct chunk — not just the one with the lowest training loss.
+After each epoch, the model is evaluated on the validation QA-pairs by measuring **Hit Rate@5** — the proportion of validation questions for which the correct chunk appears in the top-5 retrieved results. Retrieval works by embedding the question, passing it through the neural network to transform the embedding, and ranking all corpus chunks by cosine similarity to the transformed embedding. [Optuna](https://optuna.org/) (TPE Bayesian optimisation) searches over hyperparameters across multiple trials, saving the checkpoint with the highest validation Hit Rate. This means the saved model is the one that most reliably retrieves the correct chunk — not just the one with the lowest training loss.
 
 The figure below shows for a training iteration how MNR loss and validation hit rate evolve together during training, hinting that the loss is a reliable proxy for retrieval quality:
 
@@ -45,7 +47,7 @@ The figure below shows for a training iteration how MNR loss and validation hit 
 
 ### Retrieval Hit Rate
 
-The fine-tuned retriever is evaluated against the baseline (raw embeddings, no transformation) on 100 held-out test questions from the Legal RAG Bench dataset. Hit Rate (k = 20) measures how often the correct chunk appears in the top 20 retrieved results.
+The fine-tuned retriever, the one with the highest Hit Rate on the QA-pairs validation set, is evaluated against the baseline (raw embeddings, no transformation) on 100 held-out test questions from the Legal RAG Bench dataset. Hit Rate (k = 20) measures how often the correct chunk appears in the top 20 retrieved results.
 
 ![Retrieval Comparison](results/retrieval_comparison.png)
 
